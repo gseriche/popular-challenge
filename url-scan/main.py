@@ -2,6 +2,7 @@ import requests
 import json
 import time
 import logging
+import boto3
 
 logging.basicConfig(
     filename='urlscan.log', 
@@ -22,8 +23,8 @@ response = requests.post('https://urlscan.io/api/v1/scan/',headers=headers, data
 response.raise_for_status()
 get_response = response.json()
 
-logging.info("Waiting 25 secs to get the report")
-time.sleep(25)
+logging.info("Waiting 30 secs to get the report")
+time.sleep(30)
 
 logging.info("Getting the result of scanning")
 urlscan_response = requests.get(get_response['api'])
@@ -35,4 +36,10 @@ file.write(urlscan_response.text)
 file.close()
 
 logging.info("Closing file url_response.json")
+
+logging.info("Uploading the file to the bucket")
+s3 = boto3.resource('s3')
+file_urlscan = open("url_response.json", "rb")
+s3.Bucket('lapopular-url-scan').put_object(Key='url_response.json', Body=file_urlscan)
+
 logging.info("End : %s" % time.ctime())
